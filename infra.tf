@@ -22,6 +22,14 @@ variable "webapp_count"{
 type = string
 }
 
+variable "haproxy_count"{
+type = string
+}
+
+variable "gunicorn_count"{
+type = string
+}
+
 ################ Authentication ##########33
 provider "aws" {
     region = var.myregion
@@ -101,8 +109,8 @@ resource "aws_security_group" "mysg" {
 }
 
 # Step 2
-resource "aws_key_pair" "my" {
-  key_name   = "my"
+resource "aws_key_pair" "mykp" {
+  key_name   = "mykp"
   public_key = var.mypublickey
 }
 
@@ -112,9 +120,9 @@ resource "aws_instance" "jenkins" {
   ami           = var.myami
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.mysg.id]
-  key_name = "my"
+  key_name = "mykp"
   subnet_id = aws_subnet.mysubnet.id
-  instance_type = "t2.micro"
+  instance_type = "t2.large"
   tags = {
     Name = "jenkins-server"
   }
@@ -125,9 +133,9 @@ resource "aws_instance" "artifactory" {
   ami           = var.myami
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.mysg.id]
-  key_name = "my"
+  key_name = "mykp"
   subnet_id = aws_subnet.mysubnet.id
-  instance_type = "t2.medium"
+  instance_type = "t2.large"
   tags = {
     Name = "artifactory-server"
   }
@@ -138,11 +146,37 @@ resource "aws_instance" "webapp" {
   ami           = var.myami
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.mysg.id]
-  key_name = "my"
+  key_name = "mykp"
   subnet_id = aws_subnet.mysubnet.id
-  instance_type = "t2.micro"
+  instance_type = "t2.large"
   tags = {
     Name = "webapp-server"
+  }
+}
+ 
+ resource "aws_instance" "haproxy" {
+  count = var.haproxy_count
+  ami           = var.myami
+  associate_public_ip_address = "true"
+  vpc_security_group_ids = [aws_security_group.mysg.id]
+  key_name = "mykp"
+  subnet_id = aws_subnet.mysubnet.id
+  instance_type = "t2.large"
+  tags = {
+    Name = "haproxy-server"
+  }
+}
+ 
+ resource "aws_instance" "gunicorn" {
+  count = var.gunicorn_count
+  ami           = var.myami
+  associate_public_ip_address = "true"
+  vpc_security_group_ids = [aws_security_group.mysg.id]
+  key_name = "mykp"
+  subnet_id = aws_subnet.mysubnet.id
+  instance_type = "t2.large"
+  tags = {
+    Name = "gunicorn-server"
   }
 }
  
